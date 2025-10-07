@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Chhattisgarh Tourism Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .chat-bubble-user { background-color: #2563eb; color: white; align-self: flex-end; }
+        .chat-bubble-ai { background-color: #e5e7eb; color: #1f2937; align-self: flex-start; }
+        .chat-bubble { max-width: 80%; padding: 0.75rem 1rem; border-radius: 1rem; line-height: 1.5; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-content { animation: scaleIn 0.3s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* Calendar Styles */
+        .calendar-day { transition: all 0.2s ease; }
+        .calendar-day:hover { background-color: #dbeafe; color: #1e40af; }
+        .calendar-day.selected { background-color: #2563eb; color: white; border-radius: 9999px; }
+        .calendar-day.today { background-color: #bfdbfe; color: #1e3a8a; border-radius: 9999px; font-weight: bold; }
+        .calendar-day.empty { background-color: transparent; cursor: default; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- App Container -->
+    <div id="app">
+
+        <!-- Header -->
+        <header class="bg-green-800 text-white p-5 shadow-lg sticky top-0 z-40">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl md:text-3xl font-bold">Chhattisgarh Tourism AI</h1>
+                <nav class="hidden md:flex space-x-6 text-lg">
+                    <a href="#destinations" class="hover:text-green-200 transition-colors">Destinations</a>
+                    <a href="#planner" class="hover:text-green-200 transition-colors">Trip Planner</a>
+                    <a href="#about" class="hover:text-green-200 transition-colors">About</a>
+                </nav>
+                 <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+             <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <a href="#destinations" class="block py-2 px-4 text-sm hover:bg-green-700 rounded">Destinations</a>
+                <a href="#planner" class="block py-2 px-4 text-sm hover:bg-green-700 rounded">Trip Planner</a>
+                <a href="#about" class="block py-2 px-4 text-sm hover:bg-green-700 rounded">About</a>
+            </div>
+        </header>
+
+        <main>
+            <!-- Hero Section -->
+            <div class="relative h-[60vh] bg-cover bg-center" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/87/Chitrakote_waterfalls.jpg')">
+                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div class="text-center text-white p-4">
+                        <h2 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Discover with AI</h2>
+                        <p class="text-lg md:text-xl max-w-2xl mx-auto">Get AI-generated insights and chat live about Chhattisgarh's stunning waterfalls, ancient temples, and vibrant culture.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destinations Section -->
+            <section id="destinations" class="py-16">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl font-bold text-center text-gray-800 mb-12">Trendy Destinations</h2>
+                    <div id="destinations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Destination cards will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Destination Recommender Section -->
+            <section id="ai-recommender" class="py-16 bg-gray-50">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl font-bold text-center text-gray-800 mb-4">AI Destination Recommender</h2>
+                    <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Tell us about your travel plans, and our AI will suggest the perfect spots in Chhattisgarh for you!</p>
+                    <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="group-type" class="block text-sm font-medium text-gray-700">Who are you traveling with?</label>
+                                <select id="group-type" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                    <option>Solo</option>
+                                    <option>Couple</option>
+                                    <option>Family with Kids</option>
+                                    <option>Group of College Students</option>
+                                    <option>Seniors</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="trip-type" class="block text-sm font-medium text-gray-700">What's your ideal trip?</label>
+                                <select id="trip-type" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                    <option>Waterfalls & Nature</option>
+                                    <option>Temples & Heritage</option>
+                                    <option>Wildlife & Adventure</option>
+                                    <option>Relaxing Hill Station</option>
+                                    <option>Long Rides & Scenic Drives</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="trip-duration" class="block text-sm font-medium text-gray-700">Trip duration (days)?</label>
+                                <input type="number" id="trip-duration" min="1" value="3" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            </div>
+                        </div>
+                        <div class="mt-8 text-center">
+                            <button id="get-recommendations-btn" class="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300 text-lg">
+                                <i class="fas fa-magic mr-2"></i>Get AI Recommendations
+                            </button>
+                        </div>
+                    </div>
+                    <div id="recommendation-result" class="mt-8 p-6 bg-white rounded-xl shadow-lg min-h-[150px]">
+                         <p class="text-gray-500 text-center">Your personalized AI recommendations will appear here...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trip Planner Section -->
+            <section id="planner" class="py-16 bg-white">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl font-bold text-center text-gray-800 mb-12">Plan Your Trip</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                        <!-- Calendar -->
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Trip Calendar</h3>
+                            <div id="calendar-container">
+                                <div class="flex items-center justify-between mb-4">
+                                    <button id="prev-month" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"><i class="fas fa-chevron-left"></i></button>
+                                    <h3 id="month-year" class="text-xl font-semibold"></h3>
+                                    <button id="next-month" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-2 text-center font-semibold text-gray-600">
+                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                </div>
+                                <div id="calendar-grid" class="grid grid-cols-7 gap-2 mt-2 text-center">
+                                    <!-- Calendar days will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Route Finder -->
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">AI Route Finder</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="route-start" class="block text-sm font-medium text-gray-700">From:</label>
+                                    <select id="route-start" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></select>
+                                </div>
+                                <div>
+                                    <label for="route-end" class="block text-sm font-medium text-gray-700">To:</label>
+                                    <select id="route-end" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></select>
+                                </div>
+                                <button id="find-route-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                                    <i class="fas fa-route mr-2"></i>Find Fastest Route
+                                </button>
+                                <div id="route-result" class="mt-4 p-4 bg-blue-50 rounded-lg min-h-[100px] border border-blue-200">
+                                    <p class="text-gray-500">Your AI-generated route will appear here...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Redbus Link -->
+                    <div class="text-center mt-16">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Need to Book a Bus?</h3>
+                        <a href="https://www.redbus.in/" target="_blank" rel="noopener noreferrer" class="inline-block bg-red-600 text-white font-bold py-4 px-8 rounded-lg text-xl hover:bg-red-700 transition transform hover:scale-105 duration-300 shadow-lg">
+                            Visit Redbus <i class="fas fa-bus ml-2"></i>
+                        </a>
+                    </div>
+
+                    <!-- Sticky Note for Trip Plans -->
+                    <div class="mt-16">
+                        <div id="sticky-note" class="bg-yellow-200 p-6 rounded-lg shadow-lg transform -rotate-2 hover:rotate-0 hover:scale-105 transition-transform duration-300 max-w-md mx-auto">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center" style="font-family: 'Comic Sans MS', cursive, sans-serif;">My Trip Notes</h3>
+                            <textarea id="trip-notes-textarea" class="w-full h-40 bg-yellow-200 border-0 focus:ring-0 resize-none placeholder-gray-600" style="font-family: 'Comic Sans MS', cursive, sans-serif;" placeholder="Jot down your plans, reminders, or places to visit... Your notes are saved automatically!"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- About Section -->
+            <section id="about" class="py-16">
+                 <div class="container mx-auto px-6 text-center max-w-3xl">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">About Chhattisgarh</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed">
+                        Carved out of Madhya Pradesh in 2000, Chhattisgarh is a state rich in natural beauty and cultural heritage. It is known for its dense forests, which cover nearly half of the state, its magnificent waterfalls, and its ancient temples. The state is also home to a large tribal population, whose traditions and art forms add a unique vibrancy to the region's culture. Our AI guide is here to help you explore it all.
+                    </p>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white p-8">
+            <div class="container mx-auto text-center">
+                <p>&copy; 2025 Chhattisgarh Tourism Guide. AI-Powered Experience.</p>
+            </div>
+        </footer>
+
+        <!-- Destination Modal -->
+        <div id="destination-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+            <div id="modal-content" class="modal-content bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
+        
+        <!-- Chatbot Widget -->
+        <div id="chatbot-widget" class="fixed bottom-5 right-5 z-50">
+            <button id="chat-toggle-button" class="bg-green-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:bg-green-800 transition-transform hover:scale-110">
+                <i class="fas fa-comments text-2xl"></i>
+            </button>
+            <div id="chat-window" class="hidden absolute bottom-20 right-0 w-80 md:w-96 h-[30rem] bg-white rounded-lg shadow-2xl flex flex-col transition-all">
+                <div class="bg-green-700 text-white p-4 rounded-t-lg flex justify-between items-center">
+                    <h3 class="font-bold">Chhattisgarh AI Guide</h3>
+                    <button id="chat-close-button"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+                <div class="p-2 border-t">
+                    <form id="chat-form" class="flex items-center space-x-2">
+                        <input type="text" id="chat-input" placeholder="Ask about Chhattisgarh..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" autocomplete="off">
+                        <button type="submit" class="bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700 disabled:bg-gray-400">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CONFIGURATION ---
+           
+            
+            // --- MOCK DATA ---
+
+
+            // --- UI ELEMENTS ---
+            const destinationsGrid = document.getElementById('destinations-grid');
+            const modal = document.getElementById('destination-modal');
+            const modalContent = document.getElementById('modal-content');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            // Chatbot Elements
+            const chatToggleButton = document.getElementById('chat-toggle-button');
+            const chatWindow = document.getElementById('chat-window');
+            const chatCloseButton = document.getElementById('chat-close-button');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            
+            // Calendar Elements
+            const monthYearEl = document.getElementById('month-year');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+
+            // Route Finder Elements
+            const routeStartSelect = document.getElementById('route-start');
+            const routeEndSelect = document.getElementById('route-end');
+            const findRouteBtn = document.getElementById('find-route-btn');
+            const routeResultDiv = document.getElementById('route-result');
+            
+            // AI Recommender Elements
+            const getRecommendationsBtn = document.getElementById('get-recommendations-btn');
+            const recommendationResultDiv = document.getElementById('recommendation-result');
+            const groupTypeSelect = document.getElementById('group-type');
+            const tripTypeSelect = document.getElementById('trip-type');
+            const tripDurationInput = document.getElementById('trip-duration');
+
+            // Sticky Note Element
+            const tripNotesTextarea = document.getElementById('trip-notes-textarea');
+
+            // --- STATE ---
+            let currentDate = new Date();
+            let selectedDate = null;
+
+            // Paste this correct function in its place
+
+// --- GEMINI API CALL FUNCTION (UPDATED) ---
+const callGeminiAPI = async (prompt, systemInstruction = null) => {
+  try {
+    // This correctly calls YOUR backend server
+    const response = await fetch('http://localhost:3000/api/gemini', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, systemInstruction })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("API call failed:", error);
+    return "Sorry, I'm having trouble connecting to the AI. Please try again.";
+  }
+};
+            
+            // --- DESTINATIONS LOGIC (UPDATED) ---
+            const renderDestinations = async () => {
+            // Fetch destinations from your backend API
+            const response = await fetch('http://localhost:3000/api/trendy-destinations');
+                const destinations = await response.json();
+
+                destinationsGrid.innerHTML = '';
+                destinations.forEach(dest => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 cursor-pointer';
+                    card.innerHTML = `<img src="${dest.imageUrl}" alt="${dest.name}" class="w-full h-48 object-cover"><div class="p-6"><h3 class="text-xl font-bold text-gray-800">${dest.name}</h3><p class="text-gray-600 mt-2">${dest.location}</p></div>`;
+                    card.addEventListener('click', () => openDestinationModal(dest));
+                    destinationsGrid.appendChild(card);
+                });
+            };
+
+            const openDestinationModal = async (destination) => {
+                modal.classList.remove('hidden');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-2xl font-bold mb-4">${destination.name}</h2><div class="flex justify-center items-center h-48"><i class="fas fa-spinner fa-spin text-4xl text-green-600"></i></div><p class="text-gray-600 mt-4">Generating an AI-powered description for you...</p></div>`;
+                const prompt = `Provide a captivating and detailed tourist description for "${destination.name}" in Chhattisgarh, India. Include key highlights, what to expect, and the best time to visit. Format it in clear paragraphs.`;
+                const aiDescription = await callGeminiAPI(prompt);
+                modalContent.innerHTML = `<div class="relative"><img src="${destination.imageUrl.replace('600x400', '800x400')}" alt="${destination.name}" class="w-full h-64 object-cover rounded-t-lg"><button id="modal-close-button" class="absolute top-2 right-2 bg-white rounded-full p-2 text-gray-800 hover:bg-gray-200"><i class="fas fa-times text-xl"></i></button></div><div class="p-8"><h2 class="text-3xl font-bold text-gray-900 mb-2">${destination.name}</h2><p class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-4">${destination.category} &bull; ${destination.location}</p><div class="text-gray-700 text-base leading-relaxed whitespace-pre-wrap">${aiDescription.replace(/\*/g, '')}</div><p class="text-xs text-gray-400 mt-6 text-right"><em>Description generated by AI</em></p></div>`;
+                document.getElementById('modal-close-button').addEventListener('click', () => modal.classList.add('hidden'));
+            };
+            modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); } });
+
+            // --- CALENDAR LOGIC ---
+            const renderCalendar = () => {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const today = new Date();
+
+                monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+                calendarGrid.innerHTML = '';
+
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                for (let i = 0; i < firstDayOfMonth; i++) {
+                    calendarGrid.innerHTML += `<div class="calendar-day empty"></div>`;
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.textContent = day;
+                    dayEl.className = 'p-2 cursor-pointer calendar-day';
+                    
+                    const thisDate = new Date(year, month, day);
+
+                    if (today.toDateString() === thisDate.toDateString()) {
+                        dayEl.classList.add('today');
+                    }
+                    if (selectedDate && selectedDate.toDateString() === thisDate.toDateString()) {
+                        dayEl.classList.add('selected');
+                    }
+                    
+                    dayEl.addEventListener('click', () => {
+                        selectedDate = thisDate;
+                        renderCalendar();
+                    });
+                    calendarGrid.appendChild(dayEl);
+                }
+            };
+            prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+            nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+
+            // --- AI ROUTE FINDER LOGIC ---
+            // --- AI ROUTE FINDER LOGIC (UPDATED) ---
+const populateRouteOptions = async () => { // Note: The function is now 'async'
+    try {
+        // Fetch the destinations from your backend API
+        const response = await fetch('http://localhost:3000/api/destinations');
+        const destinations = await response.json();
+
+        // The rest of the logic is the same, it just uses the fetched data
+        destinations.forEach(dest => {
+            const option1 = new Option(dest.name, dest.name);
+            const option2 = new Option(dest.name, dest.name);
+            routeStartSelect.add(option1);
+            routeEndSelect.add(option2);
+        });
+
+        if (destinations.length > 1) {
+            routeEndSelect.selectedIndex = 1;
+        }
+    } catch (error) {
+        console.error('Failed to populate route options:', error);
+        // Optionally, display an error to the user in the UI
+    }
+};
+            
+            findRouteBtn.addEventListener('click', async () => {
+                const start = routeStartSelect.value;
+                const end = routeEndSelect.value;
+                if (start === end) {
+                    routeResultDiv.innerHTML = `<p class="text-red-600 font-semibold">Please select two different locations.</p>`;
+                    return;
+                }
+                
+                routeResultDiv.innerHTML = `<div class="flex items-center justify-center space-x-2"><i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i><p class="text-blue-700">AI is calculating the fastest route...</p></div>`;
+                
+                const prompt = `Provide the fastest travel route from "${start}" to "${end}" within Chhattisgarh, India. Behave as a helpful travel assistant. Include the most common modes of transport (like car/taxi, bus, or train if applicable) and give an estimated travel time for each. Keep the description concise, clear, and easy for a tourist to understand.`;
+                const routeDescription = await callGeminiAPI(prompt);
+                
+                routeResultDiv.innerHTML = `<div class="whitespace-pre-wrap text-gray-800">${routeDescription.replace(/\*/g, '')}</div><p class="text-xs text-gray-400 mt-4 text-right"><em>Route generated by AI</em></p>`;
+            });
+
+            // --- AI RECOMMENDER LOGIC ---
+            getRecommendationsBtn.addEventListener('click', async () => {
+                const groupType = groupTypeSelect.value;
+                const tripType = tripTypeSelect.value;
+                const duration = tripDurationInput.value;
+
+                if (!duration || duration < 1) {
+                    recommendationResultDiv.innerHTML = `<p class="text-red-600 font-semibold text-center">Please enter a valid trip duration.</p>`;
+                    return;
+                }
+
+                recommendationResultDiv.innerHTML = `<div class="flex items-center justify-center space-x-2"><i class="fas fa-spinner fa-spin text-2xl text-green-600"></i><p class="text-green-700">AI is crafting the perfect itinerary for you...</p></div>`;
+
+                const prompt = `I am planning a trip to Chhattisgarh, India. Please suggest a travel itinerary and destinations.
+                - My group is: ${groupType}.
+                - We are interested in a trip focused on: ${tripType}.
+                - The total duration of our trip is ${duration} days.
+
+                Based on this, please provide a list of recommended places to visit. For each place, briefly explain why it is a good fit for my group and trip type. Structure the response in a clear, easy-to-read format. Act as an expert local tour guide.`;
+                
+                const recommendations = await callGeminiAPI(prompt);
+
+                recommendationResultDiv.innerHTML = `<div class="prose max-w-none text-gray-800">${recommendations.replace(/\*/g, '')}</div><p class="text-xs text-gray-400 mt-4 text-right"><em>Recommendations generated by AI</em></p>`;
+            });
+
+
+            // --- STICKY NOTE LOGIC ---
+            const loadTripNotes = () => {
+                const savedNotes = localStorage.getItem('tripNotes');
+                if (savedNotes) {
+                    tripNotesTextarea.value = savedNotes;
+                }
+            };
+
+            tripNotesTextarea.addEventListener('input', () => {
+                localStorage.setItem('tripNotes', tripNotesTextarea.value);
+            });
+
+
+            // --- CHATBOT LOGIC ---
+            const addMessageToChat = (sender, message) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-bubble fade-in ${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`;
+                let formattedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/^\* (.*$)/gm, '<li class="ml-4 list-disc">$1</li>');
+                messageDiv.innerHTML = formattedMessage;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+            
+            const showTypingIndicator = () => {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.className = 'chat-bubble chat-bubble-ai fade-in flex items-center space-x-2';
+                typingDiv.innerHTML = `<div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0s;"></div><div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div><div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>`;
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            const removeTypingIndicator = () => {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) { indicator.remove(); }
+            };
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userInput = chatInput.value.trim();
+                if (!userInput) return;
+                addMessageToChat('user', userInput);
+                chatForm.querySelector('button').disabled = true;
+                chatInput.value = '';
+                showTypingIndicator();
+                const systemInstruction = "You are a friendly and knowledgeable chatbot for the Chhattisgarh Tourism Guide. Your goal is to answer questions about tourism, culture, food, and travel in Chhattisgarh. Be helpful, engaging, and keep your answers concise and easy to read. Use simple markdown for formatting if needed.";
+                const aiResponse = await callGeminiAPI(userInput, systemInstruction);
+                removeTypingIndicator();
+                addMessageToChat('ai', aiResponse);
+                chatForm.querySelector('button').disabled = false;
+                chatInput.focus();
+            });
+
+            // --- EVENT LISTENERS & INITIALIZATION ---
+            chatToggleButton.addEventListener('click', () => chatWindow.classList.toggle('hidden'));
+            chatCloseButton.addEventListener('click', () => chatWindow.classList.add('hidden'));
+            mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            
+            // Initial render
+            renderDestinations();
+            renderCalendar();
+            populateRouteOptions();
+            loadTripNotes(); // Load saved notes on startup
+            addMessageToChat('ai', "Hello! How can I help you plan your trip to Chhattisgarh today?");
+        });
+        // --- GEMINI API CALL FUNCTION ---
+const callGeminiAPI = async (prompt, systemInstruction = null) => {
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        ...(systemInstruction && { systemInstruction: { parts: [{ text: systemInstruction }] } })
+    };
+    try {
+        // This line calls Google's API directly
+        const response = await fetch(API_URL, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errorBody = await response.json();
+            throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`);
+        }
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    } catch (error) {
+        console.error("Gemini API call failed:", error);
+        return "Sorry, I'm having trouble connecting to the AI. Please check the API key and try again.";
+    }
+};
+    </script>
+    
+</body>
+</html>
+
+
+
+
